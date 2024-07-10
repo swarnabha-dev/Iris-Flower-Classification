@@ -11,7 +11,7 @@ model_filename = 'random_forest_iris_model.joblib'
 model = load(model_filename)
 
 # Load the dataset for fitting StandardScaler and PCA
-data = pd.read_csv("Iris (1).csv")
+data = pd.read_csv("static/Iris (1).csv")
 X = data.drop(['Id', 'Species'], axis=1)
 
 # Standardize the features
@@ -23,6 +23,7 @@ pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)
 
 # Streamlit UI
+st.set_page_config(page_title="Irish Flower Classification", page_icon=":cherry_blossom:")
 col1, col2, col3 = st.columns([0.1,0.8,0.1])
 
 with col2:
@@ -36,7 +37,7 @@ def get_base64_image(image_path):
     return base64_str
 
 # Specify the path to your image
-image_path = "iris.jpg"
+image_path = "static/iris.jpg"
 
 # Get the base64 string of the image
 base64_image = get_base64_image(image_path)
@@ -80,6 +81,20 @@ if st.button("Predict"):
     
     # Display the prediction
     st.write(f"The predicted Iris species is: **{prediction[0]}**")
+
+# Load custom CSS from styles.css
+with open("static/styles.css") as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+# Add "Made by" message at the bottom right corner
+st.markdown("""
+    <div class="footer">
+        Made by Swarnabha
+        <a href="https://github.com/swarnabha-dev/" target="_blank"><img src="https://img.icons8.com/?size=30&id=LoL4bFzqmAa0&format=png&color=000000" style="vertical-align: middle;"></a>
+        <a href="https://www.instagram.com/swarnabha_halder/" target="_blank"><img src="https://img.icons8.com/fluent/30/000000/instagram-new.png" style="vertical-align: middle;"></a>
+        <a href="https://www.linkedin.com/in/swarnabha-halder-627692254/" target="_blank"><img src="https://img.icons8.com/color/30/000000/linkedin.png" style="vertical-align: middle;"></a>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 
