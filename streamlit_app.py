@@ -2,10 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from joblib import load
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
+import base64
 
 # Load the trained model
 model_filename = 'random_forest_iris_model.joblib'
@@ -24,7 +23,33 @@ pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)
 
 # Streamlit UI
-st.title("Iris Flower Classification")
+col1, col2, col3 = st.columns([0.1,0.8,0.1])
+
+with col2:
+    st.title("Iris Flower Classification")
+
+
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        base64_str = base64.b64encode(img_file.read()).decode()
+    return base64_str
+
+# Specify the path to your image
+image_path = "iris.jpg"
+
+# Get the base64 string of the image
+base64_image = get_base64_image(image_path)
+
+# Create the HTML to display the image with rounded corners
+html_code = f'''
+    <div style="display: flex; justify-content: center;">
+        <img src="data:image/jpeg;base64,{base64_image}" style="width: 300px; border-radius: 15px;">
+    </div>
+'''
+
+# Display the image using st.markdown
+st.markdown(html_code, unsafe_allow_html=True)
 
 st.write("""
 ### Enter the characteristics of the Iris flower
@@ -36,43 +61,7 @@ sepal_width = st.number_input("Sepal Width (cm)", min_value=0.0, step=0.1, forma
 petal_length = st.number_input("Petal Length (cm)", min_value=0.0, step=0.1, format="%.1f")
 petal_width = st.number_input("Petal Width (cm)", min_value=0.0, step=0.1, format="%.1f")
 
-# Function to plot decision boundaries
-def plot_decision_boundaries(X, y, classifier, pca, scaler):
-    # Convert string labels to numeric indices
-    le = LabelEncoder()
-    y_numeric = le.fit_transform(y)
 
-    cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
-    cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
-
-    h = .02  # step size in the mesh
-    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                         np.arange(y_min, y_max, h))
-    
-    grid_points = np.c_[xx.ravel(), yy.ravel()]
-    grid_points_scaled = scaler.transform(grid_points)
-    grid_points_pca = pca.transform(grid_points_scaled)
-    
-    Z = classifier.predict(grid_points_pca)
-    Z = le.transform(Z)
-    
-    # Reshape the predictions to match xx and yy shapes
-    Z = Z.reshape(xx.shape)
-    
-    # Create a figure and plot the decision boundaries
-    plt.figure()
-    plt.pcolormesh(xx, yy, Z, cmap=cmap_light, shading='auto')
-    
-    # Plot the training points
-    plt.scatter(X[:, 0], X[:, 1], c=y_numeric, cmap=cmap_bold, edgecolor='k', s=20)
-    plt.xlim(xx.min(), xx.max())
-    plt.ylim(yy.min(), yy.max())
-    plt.title("Decision Boundaries")
-    plt.xlabel('PCA Component 1')
-    plt.ylabel('PCA Component 2')
-    plt.show()
 
 
 # Predict button
@@ -92,8 +81,5 @@ if st.button("Predict"):
     # Display the prediction
     st.write(f"The predicted Iris species is: **{prediction[0]}**")
 
-    # Plot the decision boundaries
-    st.write("### Decision Boundaries Visualization")
-    st.pyplot(plot_decision_boundaries(X_pca, data['Species'], model, pca, scaler))
 
 
